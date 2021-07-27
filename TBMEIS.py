@@ -553,7 +553,7 @@ class MyMenu(Menu):
         self.window_default.geometry("420x320")
     
     def About(self):
-        messagebox.showinfo("EIS One Module Test", "EIS One Module Test\nVersion: {0:s}\nDate: {1:s}".format(Version, VersionDate))
+        messagebox.showinfo("TBMEIS", "Toyota Battery Module EIS Test\nVersion: {0:s}\nDate: {1:s}".format(Version, VersionDate))
 
 class DefaultWindow(Toplevel):  
     def __init__(self, window):
@@ -563,7 +563,7 @@ class DefaultWindow(Toplevel):
         self.Button1_Click()    #read from cfg when open the window_default
 
     def CreateWidget(self):
-        self.Label0 = Label(self, text="Configuration File: EISModule.cfg")
+        self.Label0 = Label(self, text="Configuration File: TBMEIS.cfg")
         self.Label1 = Label(self, text="Frequency List File:")
         self.Label2 = Label(self, text="Path of Output File:")
         self.Label3 = Label(self, text="COM Port:")
@@ -630,7 +630,7 @@ class MainWindow(Frame):                #call by win = MainWindow(root)
     def __init__(self, window):         #self = MainWindow, window = root (this is pass from above)
         super().__init__()
         window.iconbitmap('icon.ico')
-        window.title("EISModule")
+        window.title("TBMEIS")
         window.geometry("1024x778")
         self.menu_my = MyMenu(window)   
         self.frame_com = ComFrame(window)

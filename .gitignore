@@ -1,2 +1,6 @@
-/icon.ico
-/venv1
+icon.ico
+venv1
+__pycache__
+build
+dist
+*.spec
