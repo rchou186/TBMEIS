@@ -5,12 +5,12 @@ further data analysis.
 
 The files contained in this program:
 
-EISModule.py        Main program
+TBMEIS.py           Main program
 powereign_icon.py   Powereign (R) logo icon
 usb_rs.py           BT4560 serial communication program
-EISModule.cfg       Configuration file
+TBMEIS.cfg          Configuration file
 frequency.csv       List of test frequencies
-Readme.txt          The description of this program
+README.md           This file
 
 Versions:
 
