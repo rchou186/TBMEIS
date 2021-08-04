@@ -32,3 +32,9 @@ Date: 2021/07/23
     Module SN to start a new test
  7. Add error message when module polarity is reversed
 
+1.20
+Date: 2021/08/03
+ 1. Add reading bin grade from MySQL Total table and display on screen for
+    user to double confirm
+ 2. Add MySQLDB in the cfg file to choose from official DB (TBR_Battery_Test)
+    or test DB (Richard)

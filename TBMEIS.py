@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 import mysql.connector
 import math
 
-Version = "1.10"
-VersionDate = "2021/07/23"
+Version = "1.20"
+VersionDate = "2021/08/03"
 
 ### Debug switches ###
 DebugWithoutCom = False
@@ -75,21 +75,23 @@ def ReadDefault(Item):
             if lines[4].split('= ')[1].split('\n')[0] == "True":
                 return(True)
             else:
-                return(False)    
-        if Item == "MySQLTable":
+                return(False)
+        if Item == "MySQLDB":
             return(lines[5].split('= ')[1].split('\n')[0])
-        if Item == "SlopeFreq1":
+        if Item == "MySQLTable":
             return(lines[6].split('= ')[1].split('\n')[0])
-        if Item == "SlopeFreq2":
+        if Item == "SlopeFreq1":
             return(lines[7].split('= ')[1].split('\n')[0])
-        if Item == "X-AxisLowLimit":
+        if Item == "SlopeFreq2":
             return(lines[8].split('= ')[1].split('\n')[0])
-        if Item == "X-AxisHighLimit":
+        if Item == "X-AxisLowLimit":
             return(lines[9].split('= ')[1].split('\n')[0])
-        if Item == "Y-AxisLowLimit":
+        if Item == "X-AxisHighLimit":
             return(lines[10].split('= ')[1].split('\n')[0])
-        if Item == "Y-AxisHighLimit":
+        if Item == "Y-AxisLowLimit":
             return(lines[11].split('= ')[1].split('\n')[0])
+        if Item == "Y-AxisHighLimit":
+            return(lines[12].split('= ')[1].split('\n')[0])
     except:
         messagebox.showerror("Open File Error", "Can't Open Configuration File!\nMake sure TBMEIS.cfg in in the current folder.")
         exit()
@@ -99,7 +101,7 @@ def SavetoMySQL(dfin, MSN):
         host = "192.168.1.84",
         user = "richard",
         password = "richardtbts",
-        database = "TBR_Battery_Test"
+        database = ReadDefault("MySQLDB")   #TBR_Battery_Test(official) or Richard(test)
     )
     mycursor = mydb.cursor()
     #create fieldlist and datalist in MySQL
@@ -125,6 +127,23 @@ def SavetoMySQL(dfin, MSN):
     mycursor.execute(sql)   #write to MySQL and commit
     mydb.commit()
 
+def ReadBinfromMySQL(MSN):
+    mydb = mysql.connector.connect(
+        host = "192.168.1.84",
+        user = "richard",
+        password = "richardtbts",
+        database = "TBR_Battery_Test"
+    )
+    mycursor = mydb.cursor()
+    sql = "SELECT BIN FROM Total WHERE M_SN = '{a}' ORDER BY Date DESC".format(a=MSN)
+    mycursor.execute(sql)
+    myresult = mycursor.fetchone()
+    if myresult == None:
+        return("X")
+    else:    
+        return(myresult[0].decode())
+
+
 def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
     #Clear Result in text, graph and slope+theta
     #clear MSN entry
@@ -133,6 +152,7 @@ def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
         win.frame_file.Entry2.bind("<Return>", win.frame_file.Entry_Start)
         win.frame_file.Entry2.delete(0, END)
         win.frame_file.Entry2.update()
+        win.frame_grade.Lable2.configure(text="")
         win.frame_file.Entry2.focus()    #set the cursor at output file entry
     if selection == "All" or selection == "OutputResult":
         #clear ResultText
@@ -326,12 +346,15 @@ class FileFrame(Frame):
 
     def Entry_Start(self, event):       #NOTE: This triggered by press the enter key in Entry2
         if win.frame_com.Communication.opend == True:               #check if COM Port is opend
-            if self.Entry2.get() == "":      #if Battery Test Number entry is empty
+            MSN = self.Entry2.get()
+            if MSN == "":      #if Battery Test Number entry is empty
                 messagebox.showerror("Error", "No Module SN,\nEnter Module Serial Number to Start!")
-            elif self.Entry2.get() == self.PreviousMSN:
+            elif MSN == self.PreviousMSN:
                 messagebox.showwarning("Warning", "Module has been tested!")
                 ClearResult("MSNEntry")
             else:
+                BIN = ReadBinfromMySQL(MSN)
+                win.frame_grade.Lable2.configure(text=BIN)
                 threading.Thread(target=self.Threading_Start).start()
         else:
             messagebox.showerror("Error", "COM Port is not opend!")                
@@ -532,6 +555,16 @@ class ResultTextFrame(Frame):
         self.Label4.place(x=80, y=600)
         self.Label5.place(x=80, y=630)
 
+class GradeFrame(Frame):
+    def __init__(self, window):
+        super().__init__()
+        self.config(bd=2, width=100, height=100)#, bg='white')
+        self.CreateWidget()
+
+    def CreateWidget(self):
+        self.Lable2 = Label(self, text=" ", font=("Arial", 20, "bold"), fg="red")
+        self.Lable2.pack()
+
 class MyMenu(Menu):
     def __init__(self, window):
         super().__init__()
@@ -641,12 +674,14 @@ class MainWindow(Frame):                #call by win = MainWindow(root)
         self.frame_text = ResultTextFrame(window)
         self.frame_graph = ResultGraphFrame(window)
         self.frame_prog = ProgFrame(window)
+        self.frame_grade = GradeFrame(window)
         self.frame_com.place(y=0, x=0)
         self.frame_file.place(y=0, x=304)
         self.frame_prog.place(y=0, x=782)
         self.frame_list.place(y=88, x=0)
         self.frame_graph.place(y=92, x=104)
         self.frame_text.place(y=88, x=157+583)
+        self.frame_grade.place(y=96, x=500)
         self.Insert_Defaults()
 
     def Insert_Defaults(self):      #insert default values that reads from cfg file to desired entrys
