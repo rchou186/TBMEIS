@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 import mysql.connector
 import math
 
-Version = "1.20"
-VersionDate = "2021/08/03"
+Version = "1.21"
+VersionDate = "2021/08/09"
 
 ### Debug switches ###
 DebugWithoutCom = False
@@ -105,8 +105,8 @@ def SavetoMySQL(dfin, MSN):
     )
     mycursor = mydb.cursor()
     #create fieldlist and datalist in MySQL
-    fieldlist = ['M_SN', 'Date', 'Time', 'Voltage']
-    datalist = [MSN, dfin.loc[0,'Date'], dfin.loc[0,'Time'], dfin.loc[0,'V(V)']]    #get the date, time and voltage from first point
+    fieldlist = ['M_SN', 'Date', 'Time', 'Voltage', 'BIN']                                              #V1.20 add BIN to save to MySQL
+    datalist = [MSN, dfin.loc[0,'Date'], dfin.loc[0,'Time'], dfin.loc[0,'V(V)'], win.frame_file.BIN]    #get the date, time and voltage from first point
     for i in range(0, len(dfin)):
         fieldlist.append('F{0:02d}_F'.format(i+1))
         datalist.append(dfin.loc[i,'FREQUENCY'])
@@ -353,8 +353,8 @@ class FileFrame(Frame):
                 messagebox.showwarning("Warning", "Module has been tested!")
                 ClearResult("MSNEntry")
             else:
-                BIN = ReadBinfromMySQL(MSN)
-                win.frame_grade.Lable2.configure(text=BIN)
+                self.BIN = ReadBinfromMySQL(MSN)
+                win.frame_grade.Lable2.configure(text=self.BIN)
                 threading.Thread(target=self.Threading_Start).start()
         else:
             messagebox.showerror("Error", "COM Port is not opend!")                
