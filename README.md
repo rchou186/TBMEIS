@@ -44,3 +44,8 @@ Date 2021/08/09
  1. The bin grading looked up from MySQL Total table will be stored in the EIS
     table.
     
+1.30
+Date 2021/08/20
+ 1. The measurement range of 30mOhm, 300mOhm and 3Ohm can be set in the .cfg
+    file.
+ 2. The .cfg file add the Range at the last line 13.

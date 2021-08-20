@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 import mysql.connector
 import math
 
-Version = "1.21"
-VersionDate = "2021/08/09"
+Version = "1.30"
+VersionDate = "2021/08/20"
 
 ### Debug switches ###
 DebugWithoutCom = False
@@ -43,8 +43,8 @@ def CreateIcon():
 def Init_BT4560(Comm):
     Comm.sendMsg('*RST')
     Comm.sendMsg('SYSTEM:BEEPER OFF')            
-    Comm.sendMsg('FUNCTION RV')            
-    Comm.sendMsg('RANGE 30.0E-3')            
+    Comm.sendMsg('FUNCTION RV')          
+    Comm.sendMsg('RANGE '+ReadDefault("Range"))           
     Comm.sendMsg('SAMPLE:RATE V,MED')            
     Comm.sendMsg('SAMPLE:RATE Z,MED')            
     Comm.sendMsg('SAMPLE:DELAY:MODE WAVE')            
@@ -92,6 +92,8 @@ def ReadDefault(Item):
             return(lines[11].split('= ')[1].split('\n')[0])
         if Item == "Y-AxisHighLimit":
             return(lines[12].split('= ')[1].split('\n')[0])
+        if Item == "Range":
+            return(lines[13].split('= ')[1].split('\n')[0])
     except:
         messagebox.showerror("Open File Error", "Can't Open Configuration File!\nMake sure TBMEIS.cfg in in the current folder.")
         exit()
@@ -378,6 +380,7 @@ class FileFrame(Frame):
         n = []
         deltapb = float(100/len(freq_list))     #each step equals 100th of number of frequency points
         #self.ProgBar.start(1200)
+        win.frame_com.Communication.sendMsg('RANGE '+ReadDefault("Range"))   #set the range before measurement
         for i in range(0, len(freq_list)):
             win.frame_prog.ProgBar['value'] = (i+1)*deltapb
             win.frame_prog.Label1['text'] = "{0:.0f}%".format((i+1)*deltapb)
@@ -583,7 +586,7 @@ class MyMenu(Menu):
         self.window_default = DefaultWindow(self)
         self.window_default.iconbitmap('icon.ico')
         self.window_default.title("Default Values Setting")
-        self.window_default.geometry("420x320")
+        #self.window_default.geometry("450x360")
     
     def About(self):
         messagebox.showinfo("TBMEIS", "Toyota Battery Module EIS Test\nVersion: {0:s}\nDate: {1:s}".format(Version, VersionDate))
@@ -602,31 +605,41 @@ class DefaultWindow(Toplevel):
         self.Label3 = Label(self, text="COM Port:")
         self.Label4 = Label(self, text="Baud Rate:")
         self.Label5 = Label(self, text="Save CSV File:")
+        self.Label6 = Label(self, text="Measurement Range:")
         self.Entry1 = Entry(self, width=35)
         self.Entry2 = Entry(self, width=35)
         self.Entry3 = Entry(self, width=35)
         self.Entry4 = Entry(self, width=35)
         self.savecsv = BooleanVar()
-        self.RB8 = Radiobutton(self, text="Yes", variable=self.savecsv, value=True)
-        self.RB9 = Radiobutton(self, text="No", variable=self.savecsv, value=False)
-        self.Label0.grid(row=0, column=0, padx=10, pady=10, columnspan=3)
+        self.RB5a = Radiobutton(self, text="Yes", variable=self.savecsv, value=True)
+        self.RB5b = Radiobutton(self, text="No", variable=self.savecsv, value=False)
+        self.range = IntVar()
+        self.RB6a = Radiobutton(self, text="30m\u03A9", variable=self.range, value=1)
+        self.RB6b = Radiobutton(self, text="300m\u03A9", variable=self.range, value=2)
+        self.RB6c = Radiobutton(self, text="3\u03A9", variable=self.range, value=3)
+        self.Label0.grid(row=0, column=0, padx=10, pady=10, columnspan=7)
         self.Label1.grid(row=1, column=0, padx=10, pady=10, sticky=E)
         self.Label2.grid(row=2, column=0, padx=10, pady=10, sticky=E)
         self.Label3.grid(row=3, column=0, padx=10, pady=10, sticky=E)
         self.Label4.grid(row=4, column=0, padx=10, pady=10, sticky=E)
         self.Label5.grid(row=5, column=0, padx=10, pady=10, sticky=E)
-        self.Entry1.grid(row=1, column=1, padx=10, pady=10, sticky=W, columnspan=2)
-        self.Entry2.grid(row=2, column=1, padx=10, pady=10, sticky=W, columnspan=2)
-        self.Entry3.grid(row=3, column=1, padx=10, pady=10, sticky=W, columnspan=2)
-        self.Entry4.grid(row=4, column=1, padx=10, pady=10, sticky=W, columnspan=2)
-        self.RB8.grid(row=5, column=1, padx=10, pady=10)
-        self.RB9.grid(row=5, column=2, padx=10, pady=10)
+        self.Label6.grid(row=6, column=0, padx=10, pady=10, sticky=E)
+        self.Entry1.grid(row=1, column=1, padx=10, pady=10, sticky=W, columnspan=6)
+        self.Entry2.grid(row=2, column=1, padx=10, pady=10, sticky=W, columnspan=6)
+        self.Entry3.grid(row=3, column=1, padx=10, pady=10, sticky=W, columnspan=6)
+        self.Entry4.grid(row=4, column=1, padx=10, pady=10, sticky=W, columnspan=6)
+        self.RB5a.grid(row=5, column=1, padx=10, pady=10, columnspan=3)
+        self.RB5b.grid(row=5, column=4, padx=10, pady=10, columnspan=3)
+        self.RB6a.grid(row=6, column=1, padx=10, pady=10, columnspan=2)
+        self.RB6b.grid(row=6, column=3, padx=10, pady=10, columnspan=2)
+        self.RB6c.grid(row=6, column=5, padx=10, pady=10, columnspan=2)
+
         self.Button1 = Button(self, text="Read", command=self.Button1_Click, width=10)
         self.Button2 = Button(self, text="Save", command=self.Button2_Click, width=10)
         self.Button3 = Button(self, text="Cancel", command=self.Button3_Click, width=10)
-        self.Button1.grid(row=8, column=0, padx=10, pady=10)
-        self.Button2.grid(row=8, column=1, padx=10, pady=10)
-        self.Button3.grid(row=8, column=2, padx=10, pady=10)
+        self.Button1.grid(row=8, column=1, padx=10, pady=10, columnspan=2)
+        self.Button2.grid(row=8, column=3, padx=10, pady=10, columnspan=2)
+        self.Button3.grid(row=8, column=5, padx=10, pady=10, columnspan=2)
 
     def Button1_Click(self):    #Read
         self.Entry1.delete(0, END)
@@ -638,6 +651,13 @@ class DefaultWindow(Toplevel):
         self.Entry4.delete(0, END)
         self.Entry4.insert(END, ReadDefault("BaudRate"))
         self.savecsv.set(ReadDefault("SaveCSV"))
+        s = ReadDefault("Range")
+        if s == "3.0E+0":  
+            self.range.set(3)
+        elif s == "300.0E-3":
+            self.range.set(2)
+        else: #"30.0E-3"
+            self.range.set(1)
 
     def Button2_Click(self):    #Save
         with open(current_path+"/"+configuration_filename, 'r') as configuration_file:
@@ -649,6 +669,14 @@ class DefaultWindow(Toplevel):
         lines[2] = "COMPort = "+self.Entry3.get()+'\n'
         lines[3] = "BaudRate = "+self.Entry4.get()+'\n'
         lines[4] = "SaveCSV = "+str(self.savecsv.get())+'\n'
+        if self.range.get() == 1:
+            s = "30.0E-3"
+        elif self.range.get() == 2:
+            s = "300.0E-3"
+        elif self.range.get() == 3:
+            s = "3.0E+0"
+        lines[13] = "Range = "+s+'\n'
+        
 
         with open(current_path+"/"+configuration_filename, 'w') as configuration_file:
             configuration_file.writelines(lines)
