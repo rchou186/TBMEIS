@@ -444,10 +444,12 @@ class FileFrame(Frame):
             messagebox.showerror("Timeout", "BT4560 Communication Timeout!")
             self.timeoutflag = False
         elif self.connectionerrorflag:
-            messagebox.showerror("Error", "Battery Connection Error!")
+            #messagebox.showerror("Error", "Battery Connection Error!")
+            win.frame_message.message.set("Bad Connection!")
             self.connectionerrorflag = False
         elif self.reverseerrorflag:
-            messagebox.showerror("Error", "Battery Reverse Connection!")
+            #messagebox.showerror("Error", "Battery Reverse Connection!")
+            win.frame_message.message.set("Battery Reversed!")
             self.reverseerrorflag = False
         else: 
             #messagebox.showinfo("Done", "Test Completed!")
@@ -565,8 +567,19 @@ class GradeFrame(Frame):
         self.CreateWidget()
 
     def CreateWidget(self):
-        self.Lable2 = Label(self, text=" ", font=("Arial", 20, "bold"), fg="red")
+        self.Lable2 = Label(self, text="K", font=("Arial", 20, "bold"), fg="Blue")
         self.Lable2.pack()
+
+class MessageFrame(Frame):
+    def __init__(self, window):
+        super().__init__()
+        self.createWidget()
+    
+    def createWidget(self):
+        self.message = StringVar()
+        self.message.set("")
+        self.Label1 = Label(self, textvariable=self.message, font=("Arial", 14), fg = "red")
+        self.Label1.pack()
 
 class MyMenu(Menu):
     def __init__(self, window):
@@ -703,13 +716,15 @@ class MainWindow(Frame):                #call by win = MainWindow(root)
         self.frame_graph = ResultGraphFrame(window)
         self.frame_prog = ProgFrame(window)
         self.frame_grade = GradeFrame(window)
+        self.frame_message = MessageFrame(window)
         self.frame_com.place(y=0, x=0)
         self.frame_file.place(y=0, x=304)
         self.frame_prog.place(y=0, x=782)
         self.frame_list.place(y=88, x=0)
         self.frame_graph.place(y=92, x=104)
         self.frame_text.place(y=88, x=157+583)
-        self.frame_grade.place(y=96, x=500)
+        self.frame_grade.place(y=90, x=500)
+        self.frame_message.place(y=90, x=450)
         self.Insert_Defaults()
 
     def Insert_Defaults(self):      #insert default values that reads from cfg file to desired entrys
