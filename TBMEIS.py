@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 import mysql.connector
 import math
 
-Version = "1.30"
-VersionDate = "2021/08/20"
+Version = "1.31"
+VersionDate = "2021/08/27"
 
 ### Debug switches ###
 DebugWithoutCom = False
@@ -145,7 +145,6 @@ def ReadBinfromMySQL(MSN):
     else:    
         return(myresult[0].decode())
 
-
 def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
     #Clear Result in text, graph and slope+theta
     #clear MSN entry
@@ -154,7 +153,7 @@ def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
         win.frame_file.Entry2.bind("<Return>", win.frame_file.Entry_Start)
         win.frame_file.Entry2.delete(0, END)
         win.frame_file.Entry2.update()
-        win.frame_grade.Lable2.configure(text="")
+        win.frame_message.grade_message.set("")
         win.frame_file.Entry2.focus()    #set the cursor at output file entry
     if selection == "All" or selection == "OutputResult":
         #clear ResultText
@@ -176,6 +175,7 @@ def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
         #clear slope and theta
         win.frame_text.Label4.configure(text="")
         win.frame_text.Label5.configure(text="")
+
 
 class CommFilter:
     def __init__(self, gui):
@@ -348,15 +348,17 @@ class FileFrame(Frame):
 
     def Entry_Start(self, event):       #NOTE: This triggered by press the enter key in Entry2
         if win.frame_com.Communication.opend == True:               #check if COM Port is opend
-            MSN = self.Entry2.get()
+            win.frame_message.message.set("")                       #clear error message when MSN is entered
+            MSN = self.Entry2.get() 
             if MSN == "":      #if Battery Test Number entry is empty
-                messagebox.showerror("Error", "No Module SN,\nEnter Module Serial Number to Start!")
+                #messagebox.showerror("Error", "No Module SN,\nEnter Module Serial Number to Start!")
+                ClearResult("MSNEntry")
             elif MSN == self.PreviousMSN:
                 messagebox.showwarning("Warning", "Module has been tested!")
                 ClearResult("MSNEntry")
             else:
                 self.BIN = ReadBinfromMySQL(MSN)
-                win.frame_grade.Lable2.configure(text=self.BIN)
+                win.frame_message.grade_message.set(self.BIN)
                 threading.Thread(target=self.Threading_Start).start()
         else:
             messagebox.showerror("Error", "COM Port is not opend!")                
@@ -446,10 +448,12 @@ class FileFrame(Frame):
         elif self.connectionerrorflag:
             #messagebox.showerror("Error", "Battery Connection Error!")
             win.frame_message.message.set("Bad Connection!")
+            ClearResult("All")
             self.connectionerrorflag = False
         elif self.reverseerrorflag:
             #messagebox.showerror("Error", "Battery Reverse Connection!")
             win.frame_message.message.set("Battery Reversed!")
+            ClearResult("All")
             self.reverseerrorflag = False
         else: 
             #messagebox.showinfo("Done", "Test Completed!")
@@ -560,26 +564,18 @@ class ResultTextFrame(Frame):
         self.Label4.place(x=80, y=600)
         self.Label5.place(x=80, y=630)
 
-class GradeFrame(Frame):
-    def __init__(self, window):
-        super().__init__()
-        self.config(bd=2, width=100, height=100)#, bg='white')
-        self.CreateWidget()
-
-    def CreateWidget(self):
-        self.Lable2 = Label(self, text="K", font=("Arial", 20, "bold"), fg="Blue")
-        self.Lable2.pack()
-
 class MessageFrame(Frame):
     def __init__(self, window):
         super().__init__()
         self.createWidget()
     
     def createWidget(self):
+        self.grade_message = StringVar()
+        self.Label1 = Label(self, textvariable=self.grade_message, font=("Arial", 20, "bold"), fg="Blue")
         self.message = StringVar()
-        self.message.set("")
-        self.Label1 = Label(self, textvariable=self.message, font=("Arial", 14), fg = "red")
-        self.Label1.pack()
+        self.Label2 = Label(self, textvariable=self.message, font=("Arial", 14), fg = "red")
+        self.Label1.grid(row=0, column=0)
+        self.Label2.grid(row=0, column=1)
 
 class MyMenu(Menu):
     def __init__(self, window):
@@ -715,7 +711,6 @@ class MainWindow(Frame):                #call by win = MainWindow(root)
         self.frame_text = ResultTextFrame(window)
         self.frame_graph = ResultGraphFrame(window)
         self.frame_prog = ProgFrame(window)
-        self.frame_grade = GradeFrame(window)
         self.frame_message = MessageFrame(window)
         self.frame_com.place(y=0, x=0)
         self.frame_file.place(y=0, x=304)
@@ -723,8 +718,7 @@ class MainWindow(Frame):                #call by win = MainWindow(root)
         self.frame_list.place(y=88, x=0)
         self.frame_graph.place(y=92, x=104)
         self.frame_text.place(y=88, x=157+583)
-        self.frame_grade.place(y=90, x=500)
-        self.frame_message.place(y=90, x=450)
+        self.frame_message.place(y=90, x=420)
         self.Insert_Defaults()
 
     def Insert_Defaults(self):      #insert default values that reads from cfg file to desired entrys

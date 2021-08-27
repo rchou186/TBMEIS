@@ -49,3 +49,10 @@ Date 2021/08/20
  1. The measurement range of 30mOhm, 300mOhm and 3Ohm can be set in the .cfg
     file.
  2. The .cfg file add the Range at the last line 13.
+
+1.31
+Date 2021/08/27
+ 1. Change the location "Bad Connection!" and "Battery Reversed!" message on
+    top of chart instead of pop-up window.
+ 2. Without the pop-up window, the user don't need to use the mouse or
+    keyboard to close the pop-up window and clear the module SN entry.
