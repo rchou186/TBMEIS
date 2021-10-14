@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 import mysql.connector
 import math
 
-Version = "1.31"
-VersionDate = "2021/08/27"
+Version = "1.32"
+VersionDate = "2021/10/14"
 
 ### Debug switches ###
 DebugWithoutCom = False
@@ -153,7 +153,7 @@ def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
         win.frame_file.Entry2.bind("<Return>", win.frame_file.Entry_Start)
         win.frame_file.Entry2.delete(0, END)
         win.frame_file.Entry2.update()
-        win.frame_message.grade_message.set("")
+        #win.frame_message.grade_message.set("")    #remove this line to keep showing the error message
         win.frame_file.Entry2.focus()    #set the cursor at output file entry
     if selection == "All" or selection == "OutputResult":
         #clear ResultText
@@ -344,6 +344,7 @@ class FileFrame(Frame):
             win.frame_list.TextBox1.update()
     
     def Button2_Click(self):
+        win.frame_message.grade_message.set("")
         ClearResult("All")
 
     def Entry_Start(self, event):       #NOTE: This triggered by press the enter key in Entry2
@@ -356,10 +357,17 @@ class FileFrame(Frame):
             elif MSN == self.PreviousMSN:
                 messagebox.showwarning("Warning", "Module has been tested!")
                 ClearResult("MSNEntry")
+            elif len(MSN) != 12:        #V1.32 if length is not 12, show length error
+                win.frame_message.grade_message.set("Length Error!")
+                ClearResult("MSNEntry")
             else:
                 self.BIN = ReadBinfromMySQL(MSN)
-                win.frame_message.grade_message.set(self.BIN)
-                threading.Thread(target=self.Threading_Start).start()
+                if self.BIN == "X":     #V1.32 if MSN not found in Total, stop test
+                    win.frame_message.grade_message.set("Not Found!")
+                    ClearResult("MSNEntry")
+                else:
+                    win.frame_message.grade_message.set(self.BIN)
+                    threading.Thread(target=self.Threading_Start).start()
         else:
             messagebox.showerror("Error", "COM Port is not opend!")                
             win.frame_file.Entry2.delete(0,END)         #clear M_SN to begin

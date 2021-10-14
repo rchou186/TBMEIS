@@ -56,3 +56,10 @@ Date 2021/08/27
     top of chart instead of pop-up window.
  2. Without the pop-up window, the user don't need to use the mouse or
     keyboard to close the pop-up window and clear the module SN entry.
+
+1.32
+Date 2021/10/14
+ 1. Add to check the length of the Module SN. If the MSN is not 12 digits,
+    show "Length Error!" and wait for next test.
+ 2. If the Module SN is not in MySQL Total, show "Not Found!" and wait for 
+    next test.
