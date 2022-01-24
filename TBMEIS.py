@@ -22,8 +22,8 @@ from matplotlib.figure import Figure
 import mysql.connector
 import math
 
-Version = "1.32"
-VersionDate = "2021/10/14"
+Version = "1.40"
+VersionDate = "2022/01/24"
 
 ### Debug switches ###
 DebugWithoutCom = False
@@ -143,7 +143,8 @@ def ReadBinfromMySQL(MSN):
     if myresult == None:
         return("X")
     else:    
-        return(myresult[0].decode())
+        #return(myresult[0].decode())   #the SQL DB is using ascii_bin encoding for BIN
+        return(myresult[0])             #V1.40, should use utf8_general_ci for SQL DB
 
 def ClearResult(selection):     #selection: All, MSNEntry or OutputResult
     #Clear Result in text, graph and slope+theta
@@ -550,7 +551,7 @@ class ResultGraphFrame(Frame):
 class ResultTextFrame(Frame):
     def __init__(self, win):
         super().__init__()
-        self.config(bd=2, width=284, height=680)#, bg='orange')  
+        self.config(bd=2, width=334, height=680)#, bg='orange')  
         self.CreateWidget()
         self.TextBox1.configure(state=DISABLED)
 
@@ -565,8 +566,8 @@ class ResultTextFrame(Frame):
         self.TextBox1.config(yscrollcommand=self.Scrollbar1.set)
         self.TextBox1.configure(font=textbox_font)        
         self.Label1.place(x=10, y=10)
-        self.TextBox1.place(x=10, y=40, width=242, height= 550)
-        self.Scrollbar1.place(x=252, y=40, width=16, height=550)
+        self.TextBox1.place(x=10, y=40, width=292, height= 550)
+        self.Scrollbar1.place(x=302, y=40, width=16, height=550)
         self.Label2.place(x=10, y=600)
         self.Label3.place(x=10, y=630)
         self.Label4.place(x=80, y=600)
@@ -709,7 +710,7 @@ class MainWindow(Frame):                #call by win = MainWindow(root)
         super().__init__()
         window.iconbitmap('icon.ico')
         window.title("TBMEIS")
-        window.geometry("1024x778")
+        window.geometry("1074x778")
         self.menu_my = MyMenu(window)   
         self.frame_com = ComFrame(window)
         #self.line1 = Canvas(win, width=1, height=0).grid(row=0, column=1)

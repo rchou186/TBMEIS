@@ -63,3 +63,11 @@ Date 2021/10/14
     show "Length Error!" and wait for next test.
  2. If the Module SN is not in MySQL Total, show "Not Found!" and wait for 
     next test.
+
+1.40
+Date 2022/01/24
+ 1. The SQL DB is been changed to use utf8_general_ci encoding instead of 
+    ascii_bin encoding. The ReadBinfromMySQL should changed to without 
+    .docode() to not decode the bytearray format.
+ 2. Add 50 point on the width of the Result window to accommodate the result
+    length. 
